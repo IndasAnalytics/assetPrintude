@@ -35,7 +35,7 @@ export async function GET(
       LEFT JOIN Bins b ON a.binId = b.id
       LEFT JOIN Vendors v ON a.vendorId = v.id
       LEFT JOIN Employees e ON a.assignedToEmployeeId = e.id
-      WHERE a.qrHash = @hash AND a.tenantId = @tenantId AND a.isActive = 1`,
+      WHERE a.qrHash = @hash AND a.tenantId = @tenantId`,
       { hash, tenantId }
     );
 

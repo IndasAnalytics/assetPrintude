@@ -33,7 +33,7 @@ interface ClientLayoutProps {
 const navigation = [
   { name: "Dashboard", href: "/app/dashboard", icon: LayoutDashboard },
   { name: "Assets", href: "/app/assets", icon: Package },
-  { name: "Scan QR", href: "/app/scan-qr", icon: QrCode },
+  // { name: "Scan QR", href: "/app/scan-qr", icon: QrCode },
   { name: "Repairs", href: "/app/repairs", icon: Wrench },
   {
     name: "Masters",

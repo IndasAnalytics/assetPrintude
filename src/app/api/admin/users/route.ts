@@ -10,6 +10,10 @@ interface User {
   isActive: boolean;
   lastLoginAt: Date | null;
   createdAt: Date;
+  companyName: string | null;
+  subscriptionStartDate: Date | null;
+  subscriptionEndDate: Date | null;
+  tenantStatus: string | null;
 }
 
 /**
@@ -33,7 +37,10 @@ export async function GET(request: NextRequest) {
     let query = `
       SELECT
         u.*,
-        t.companyName
+        t.companyName,
+        t.subscriptionStartDate,
+        t.subscriptionEndDate,
+        t.status as tenantStatus
       FROM Users u
       LEFT JOIN Tenants t ON u.tenantId = t.id
       WHERE 1=1

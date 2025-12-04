@@ -78,7 +78,8 @@ export async function middleware(request: NextRequest) {
   requestHeaders.set("x-user-id", user.userId.toString());
   requestHeaders.set("x-user-role", user.role);
   if (user.tenantId) {
-    requestHeaders.set("x-tenant-id", user.tenantId.toString());
+    requestHeaders.set("x-user-tenant-id", user.tenantId.toString());
+    requestHeaders.set("x-tenant-id", user.tenantId.toString()); // Backward compatibility
   }
 
   return NextResponse.next({

@@ -58,7 +58,7 @@ export async function GET(
         t.*,
         p.name as planName
       FROM Tenants t
-      LEFT JOIN SubscriptionPlans p ON t.planId = p.id
+      LEFT JOIN Plans p ON t.planId = p.id
       WHERE t.id = @id`,
       { id }
     );
@@ -193,8 +193,9 @@ export async function DELETE(
       );
     }
 
+    // Hard delete the tenant
     await executeQuery(
-      `UPDATE Tenants SET isActive = 0, updatedAt = GETDATE() WHERE id = @id`,
+      `DELETE FROM Tenants WHERE id = @id`,
       { id }
     );
 

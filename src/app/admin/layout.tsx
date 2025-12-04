@@ -11,7 +11,6 @@ import {
   Users,
   Building2,
   CreditCard,
-  Settings,
   LogOut,
   Menu,
   Shield,
@@ -42,7 +41,6 @@ const navigation = [
   { name: "Tenants", href: "/admin/tenants", icon: Building2 },
   { name: "Users", href: "/admin/users", icon: Users },
   { name: "Plans", href: "/admin/plans", icon: CreditCard },
-  { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
@@ -146,10 +144,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel>Admin Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/admin/settings">Settings</Link>
-                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
                     Logout

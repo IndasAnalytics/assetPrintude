@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { executeQuery } from "@/lib/database";
+import { checkSubscriptionMiddleware, getTenantIdFromRequest } from "@/middleware/subscription-middleware";
 import type { Asset } from "@/types/asset";
 
 /**
@@ -96,6 +97,15 @@ export async function POST(request: NextRequest) {
         { success: false, message: "Unauthorized" },
         { status: 401 }
       );
+    }
+
+    // Check subscription status
+    const subscriptionCheck = await checkSubscriptionMiddleware(
+      request,
+      tenantId ? parseInt(tenantId) : null
+    );
+    if (subscriptionCheck) {
+      return subscriptionCheck;
     }
 
     const body = await request.json();

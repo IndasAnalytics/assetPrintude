@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SubscriptionBanner } from "@/components/subscription-banner";
 import {
   Package,
   PackageCheck,
@@ -121,6 +122,9 @@ export default function ClientDashboardPage() {
           </Button>
         </Link>
       </div>
+
+      {/* Subscription Warning Banner */}
+      <SubscriptionBanner />
 
       {/* Subscription Status Banner */}
       {subscription && (

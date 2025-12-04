@@ -172,8 +172,24 @@ export async function DELETE(
       );
     }
 
+    // Check if any tenants are using this plan
+    const tenantsUsingPlan = await executeQuery<{ count: number }>(
+      `SELECT COUNT(*) as count FROM Tenants WHERE planId = @id`,
+      { id }
+    );
+
+    if (tenantsUsingPlan[0]?.count > 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Cannot delete plan that is currently in use by tenants. Please deactivate it instead."
+        },
+        { status: 400 }
+      );
+    }
+
     await executeQuery(
-      `UPDATE Plans SET isActive = 0, updatedAt = GETDATE() WHERE id = @id`,
+      `DELETE FROM Plans WHERE id = @id`,
       { id }
     );
 

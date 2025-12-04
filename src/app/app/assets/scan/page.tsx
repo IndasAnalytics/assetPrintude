@@ -18,11 +18,14 @@ export default function ScanQRPage() {
   useEffect(() => {
     return () => {
       // Cleanup scanner on unmount
-      if (scanner.current && isScanning) {
-        scanner.current.stop().catch(console.error);
+      if (scanner.current) {
+        scanner.current.stop().catch((err) => {
+          // Ignore errors if scanner is already stopped
+          console.log("Scanner cleanup:", err);
+        });
       }
     };
-  }, [isScanning]);
+  }, []); // Empty dependency array - only run on mount/unmount
 
   const startScanning = async () => {
     try {
@@ -41,9 +44,10 @@ export default function ScanQRPage() {
           toast.success("QR Code scanned!");
           html5QrCode.stop().then(() => {
             setIsScanning(false);
+            scanner.current = null; // Clear reference after stopping
             // Navigate to asset details page
             router.push(`/app/assets/qr/${decodedText}`);
-          });
+          }).catch(console.error);
         },
         (errorMessage) => {
           // Ignore scanning errors, they happen frequently

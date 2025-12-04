@@ -3,11 +3,13 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Building2, Edit, Trash2, ArrowLeft } from "lucide-react";
+import { Building2, Edit, Trash2, ArrowLeft, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,6 +21,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { authFetch } from "@/lib/auth-client";
@@ -44,6 +55,8 @@ export default function TenantDetailPage() {
   const router = useRouter();
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isExtendDialogOpen, setIsExtendDialogOpen] = useState(false);
+  const [extensionMonths, setExtensionMonths] = useState("1");
 
   useEffect(() => {
     if (params.id) {
@@ -87,6 +100,35 @@ export default function TenantDetailPage() {
     } catch (error) {
       console.error("Error deleting tenant:", error);
       toast.error("Failed to delete tenant");
+    }
+  };
+
+  const handleExtendSubscription = async () => {
+    try {
+      const months = parseInt(extensionMonths);
+      if (isNaN(months) || months < 1) {
+        toast.error("Please enter a valid number of months");
+        return;
+      }
+
+      const response = await authFetch(`/api/admin/tenants/${params.id}/extend-subscription`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ months }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success(`Subscription extended by ${months} month(s)`);
+        setIsExtendDialogOpen(false);
+        fetchTenant(); // Refresh tenant data
+      } else {
+        toast.error(data.message || "Failed to extend subscription");
+      }
+    } catch (error) {
+      console.error("Error extending subscription:", error);
+      toast.error("Failed to extend subscription");
     }
   };
 
@@ -263,6 +305,51 @@ export default function TenantDetailPage() {
               <p className="mt-1 text-sm">
                 {format(new Date(tenant.createdAt), "MMM dd, yyyy HH:mm")}
               </p>
+            </div>
+
+            <div className="pt-4">
+              <Dialog open={isExtendDialogOpen} onOpenChange={setIsExtendDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="w-full">
+                    <Calendar className="mr-2 h-4 w-4" />
+                    Extend Subscription
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Extend Subscription</DialogTitle>
+                    <DialogDescription>
+                      Extend the subscription period for {tenant.companyName}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="months">Number of Months</Label>
+                      <Input
+                        id="months"
+                        type="number"
+                        min="1"
+                        value={extensionMonths}
+                        onChange={(e) => setExtensionMonths(e.target.value)}
+                        placeholder="Enter months"
+                      />
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Current end date: {tenant.subscriptionEndDate
+                        ? format(new Date(tenant.subscriptionEndDate), "MMM dd, yyyy")
+                        : "Not set"}
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsExtendDialogOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={handleExtendSubscription}>
+                      Extend Subscription
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           </CardContent>
         </Card>
