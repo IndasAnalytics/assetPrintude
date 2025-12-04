@@ -44,6 +44,7 @@ import { Badge } from "@/components/ui/badge";
 import { Users, Plus, Pencil, Trash2, Loader2, Mail, Phone } from "lucide-react";
 import { toast } from "sonner";
 import type { Employee } from "@/types/asset";
+import { authFetch } from "@/lib/auth-client";
 
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -73,7 +74,7 @@ export default function EmployeesPage() {
   const fetchEmployees = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("/api/masters/employees");
+      const response = await authFetch("/api/masters/employees");
       const result = await response.json();
 
       if (result.success) {
@@ -128,7 +129,7 @@ export default function EmployeesPage() {
         : "/api/masters/employees";
       const method = editingEmployee ? "PUT" : "POST";
 
-      const response = await fetch(url, {
+      const response = await authFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -164,7 +165,7 @@ export default function EmployeesPage() {
     if (!deletingEmployee) return;
 
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `/api/masters/employees/${deletingEmployee.id}`,
         {
           method: "DELETE",

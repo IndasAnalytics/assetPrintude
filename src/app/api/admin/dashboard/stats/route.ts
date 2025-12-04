@@ -31,27 +31,26 @@ export async function GET(request: NextRequest) {
       `SELECT
         COUNT(*) as total,
         SUM(CASE WHEN status = 'ACTIVE' THEN 1 ELSE 0 END) as active
-      FROM Tenants
-      WHERE isActive = 1`,
+      FROM Tenants`,
       {}
     );
 
     // Get total assets across all tenants
     const assetsResult = await executeQuerySingle<{ total: number }>(
-      `SELECT COUNT(*) as total FROM Assets WHERE isActive = 1`,
+      `SELECT COUNT(*) as total FROM Assets`,
       {}
     );
 
     // Get total users
     const usersResult = await executeQuerySingle<{ total: number }>(
-      `SELECT COUNT(*) as total FROM Users WHERE isActive = 1`,
+      `SELECT COUNT(*) as total FROM Users`,
       {}
     );
 
     // Get active subscriptions
     const subscriptionsResult = await executeQuerySingle<{ active: number }>(
       `SELECT COUNT(*) as active FROM Tenants
-       WHERE status IN ('ACTIVE', 'TRIAL') AND isActive = 1`,
+       WHERE status IN ('ACTIVE', 'TRIAL')`,
       {}
     );
 
@@ -62,8 +61,7 @@ export async function GET(request: NextRequest) {
         ISNULL(SUM(p.monthlyPrice *
           DATEDIFF(MONTH, t.subscriptionStartDate, COALESCE(t.subscriptionEndDate, GETDATE()))), 0) as total
       FROM Tenants t
-      LEFT JOIN Plans p ON t.planId = p.id
-      WHERE t.isActive = 1`,
+      LEFT JOIN Plans p ON t.planId = p.id`,
       {}
     );
 

@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema, type RegisterFormData } from "@/lib/validations";
+import { register } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,7 +14,6 @@ import { Package, Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function ClientRegisterPage() {
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<RegisterFormData>({
@@ -30,21 +29,19 @@ export default function ClientRegisterPage() {
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/auth/client/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      const result = await register(
+        data.companyName,
+        data.fullName,
+        data.email,
+        data.password
+      );
 
-      const result = await response.json();
-
-      if (!response.ok) {
+      if (!result.success) {
         throw new Error(result.message || "Registration failed");
       }
 
       toast.success("Account created successfully!");
-      router.push("/app/dashboard");
-      router.refresh();
+      window.location.href = "/app/dashboard";
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Registration failed. Please try again.");
     } finally {

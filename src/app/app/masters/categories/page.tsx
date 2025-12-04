@@ -44,6 +44,7 @@ import {
 import { FolderTree, Plus, Pencil, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import type { Category } from "@/types/asset";
+import { authFetch } from "@/lib/auth-client";
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -69,7 +70,7 @@ export default function CategoriesPage() {
   const fetchCategories = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("/api/masters/categories");
+      const response = await authFetch("/api/masters/categories");
       const result = await response.json();
 
       if (result.success) {
@@ -116,7 +117,7 @@ export default function CategoriesPage() {
         : "/api/masters/categories";
       const method = editingCategory ? "PUT" : "POST";
 
-      const response = await fetch(url, {
+      const response = await authFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -152,7 +153,7 @@ export default function CategoriesPage() {
     if (!deletingCategory) return;
 
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `/api/masters/categories/${deletingCategory.id}`,
         {
           method: "DELETE",

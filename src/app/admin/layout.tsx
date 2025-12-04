@@ -1,7 +1,10 @@
-import { ReactNode } from "react";
+"use client";
+
+import { ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth";
+import { logout, getAuthToken } from "@/lib/auth-client";
+import { verifyToken } from "@/lib/auth-shared";
+import { AuthGuard } from "@/components/auth/auth-guard";
 import {
   Package,
   LayoutDashboard,
@@ -22,6 +25,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -35,100 +45,124 @@ const navigation = [
   { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
-export default async function AdminLayout({ children }: AdminLayoutProps) {
-  const user = await getCurrentUser();
+export default function AdminLayout({ children }: AdminLayoutProps) {
+  const [userEmail, setUserEmail] = useState("");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Redirect if not authenticated or not super admin
-  if (!user || user.role !== "SUPER_ADMIN") {
-    redirect("/auth/admin/login");
-  }
+  useEffect(() => {
+    const token = getAuthToken();
+    if (token) {
+      const payload = verifyToken(token);
+      if (payload) {
+        setUserEmail(payload.email);
+      }
+    }
+  }, []);
 
   const handleLogout = async () => {
-    "use server";
-    const { removeAuthCookie } = await import("@/lib/auth");
-    const { redirect } = await import("next/navigation");
-    await removeAuthCookie();
-    redirect("/auth/admin/login");
+    await logout();
   };
 
-  return (
-    <div className="flex h-screen overflow-hidden">
-      {/* Sidebar */}
-      <aside className="hidden w-64 flex-col border-r bg-muted/50 lg:flex">
-        <div className="flex h-16 items-center gap-2 border-b px-6">
-          <Shield className="h-6 w-6 text-primary" />
-          <span className="text-lg font-bold">Admin Portal</span>
-        </div>
+  const SidebarContent = () => (
+    <>
+      <nav className="flex-1 space-y-1 overflow-y-auto p-4">
+        {navigation.map((item) => (
+          <Link
+            key={item.name}
+            href={item.href}
+            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            {item.icon && <item.icon className="h-4 w-4" />}
+            {item.name}
+          </Link>
+        ))}
+      </nav>
 
-        <nav className="flex-1 space-y-1 overflow-y-auto p-4">
-          {navigation.map((item) => (
-            <Link
-              key={item.name}
-              href={item.href}
-              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            >
-              {item.icon && <item.icon className="h-4 w-4" />}
-              {item.name}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="border-t p-4">
-          <form action={handleLogout}>
-            <Button variant="ghost" className="w-full justify-start gap-2" type="submit">
-              <LogOut className="h-4 w-4" />
-              Logout
-            </Button>
-          </form>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Top Header */}
-        <header className="flex h-16 items-center justify-between border-b bg-background px-6">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" className="lg:hidden">
-              <Menu className="h-5 w-5" />
-            </Button>
-            <div>
-              <p className="text-sm text-muted-foreground">Super Administrator</p>
-              <p className="text-sm font-medium">{user.email}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
-                    {user.email.charAt(0).toUpperCase()}
-                  </div>
-                  <span className="hidden md:inline">{user.email}</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>Admin Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/admin/settings">Settings</Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <form action={handleLogout} className="w-full">
-                    <button type="submit" className="w-full text-left">
-                      Logout
-                    </button>
-                  </form>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </header>
-
-        {/* Page Content */}
-        <main className="flex-1 overflow-y-auto bg-muted/50 p-6">{children}</main>
+      <div className="border-t p-4">
+        <Button
+          variant="ghost"
+          className="w-full justify-start gap-2"
+          onClick={handleLogout}
+        >
+          <LogOut className="h-4 w-4" />
+          Logout
+        </Button>
       </div>
-    </div>
+    </>
+  );
+
+  return (
+    <AuthGuard requiredRole="SUPER_ADMIN">
+      <div className="flex h-screen overflow-hidden">
+        {/* Desktop Sidebar */}
+        <aside className="hidden w-64 flex-col border-r bg-muted/50 lg:flex">
+          <div className="flex h-16 items-center gap-2 border-b px-6">
+            <Shield className="h-6 w-6 text-primary" />
+            <span className="text-lg font-bold">Admin Portal</span>
+          </div>
+          <SidebarContent />
+        </aside>
+
+        {/* Main Content */}
+        <div className="flex flex-1 flex-col overflow-hidden">
+          {/* Top Header */}
+          <header className="flex h-16 items-center justify-between border-b bg-background px-6">
+            <div className="flex items-center gap-4">
+              {/* Mobile Menu Button */}
+              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" className="lg:hidden">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-64 p-0">
+                  <SheetHeader className="border-b p-6">
+                    <SheetTitle className="flex items-center gap-2 text-left">
+                      <Shield className="h-6 w-6 text-primary" />
+                      <span className="text-lg font-bold">Admin Portal</span>
+                    </SheetTitle>
+                  </SheetHeader>
+                  <div className="flex h-[calc(100vh-5rem)] flex-col">
+                    <SidebarContent />
+                  </div>
+                </SheetContent>
+              </Sheet>
+              <div>
+                <p className="text-sm text-muted-foreground">Super Administrator</p>
+                <p className="text-sm font-medium">{userEmail}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="gap-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
+                      {userEmail.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="hidden md:inline">{userEmail}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>Admin Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/admin/settings">Settings</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout}>
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </header>
+
+          {/* Page Content */}
+          <main className="flex-1 overflow-y-auto bg-muted/50 p-6">{children}</main>
+        </div>
+      </div>
+    </AuthGuard>
   );
 }

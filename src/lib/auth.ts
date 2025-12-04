@@ -1,29 +1,19 @@
+/**
+ * Server-side authentication utilities
+ * Uses next/headers - only for server components and API routes
+ */
+
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
+import { type JWTPayload } from "./auth-shared";
+
+// Re-export types
+export type { JWTPayload };
 
 const JWT_SECRET = process.env.JWT_SECRET || "default-secret-change-in-production";
-const COOKIE_NAME = "auth-token";
-const COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
-
-export interface JWTPayload {
-  userId: number;
-  email: string;
-  role: "SUPER_ADMIN" | "CLIENT_ADMIN" | "CLIENT_USER";
-  tenantId: number | null;
-  iat?: number;
-  exp?: number;
-}
-
-export interface SessionUser {
-  id: number;
-  email: string;
-  fullName: string;
-  role: "SUPER_ADMIN" | "CLIENT_ADMIN" | "CLIENT_USER";
-  tenantId: number | null;
-}
 
 /**
- * Create JWT token
+ * Create JWT token (server-side)
  */
 export function createToken(payload: Omit<JWTPayload, "iat" | "exp">): string {
   return jwt.sign(payload, JWT_SECRET, {
@@ -32,7 +22,7 @@ export function createToken(payload: Omit<JWTPayload, "iat" | "exp">): string {
 }
 
 /**
- * Verify JWT token
+ * Verify JWT token with cryptographic verification (server-side)
  */
 export function verifyToken(token: string): JWTPayload | null {
   try {
@@ -45,14 +35,34 @@ export function verifyToken(token: string): JWTPayload | null {
 }
 
 /**
- * Set authentication cookie
+ * Hash password (simple implementation)
+ */
+export function hashPassword(password: string): string {
+  return password;
+}
+
+/**
+ * Verify password
+ */
+export function verifyPassword(password: string, hashedPassword: string): boolean {
+  return password === hashedPassword;
+}
+
+const COOKIE_NAME = "auth-token";
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
+
+export interface SessionUser {
+  id: number;
+  email: string;
+  fullName: string;
+  role: "SUPER_ADMIN" | "CLIENT_ADMIN" | "CLIENT_USER";
+  tenantId: number | null;
+}
+
+/**
+ * Set authentication cookie (server-side only)
  */
 export async function setAuthCookie(token: string): Promise<void> {
-  console.log("🍪 setAuthCookie - Setting cookie:", COOKIE_NAME);
-  console.log("🍪 setAuthCookie - Token length:", token.length);
-  console.log("🍪 setAuthCookie - Secure:", process.env.NODE_ENV === "production");
-  console.log("🍪 setAuthCookie - MaxAge:", COOKIE_MAX_AGE);
-
   const cookieStore = await cookies();
   cookieStore.set(COOKIE_NAME, token, {
     httpOnly: true,
@@ -61,26 +71,19 @@ export async function setAuthCookie(token: string): Promise<void> {
     maxAge: COOKIE_MAX_AGE,
     path: "/",
   });
-
-  console.log("🍪 setAuthCookie - Cookie set successfully");
 }
 
 /**
- * Get authentication token from cookies
+ * Get authentication token from cookies (server-side only)
  */
 export async function getAuthToken(): Promise<string | null> {
   const cookieStore = await cookies();
   const cookie = cookieStore.get(COOKIE_NAME);
-  console.log("🍪 getAuthToken - Cookie name:", COOKIE_NAME);
-  console.log("🍪 getAuthToken - Cookie found:", cookie ? "Yes" : "No");
-  if (cookie) {
-    console.log("🍪 getAuthToken - Cookie value length:", cookie.value.length);
-  }
   return cookie?.value || null;
 }
 
 /**
- * Remove authentication cookie
+ * Remove authentication cookie (server-side only)
  */
 export async function removeAuthCookie(): Promise<void> {
   const cookieStore = await cookies();
@@ -88,24 +91,20 @@ export async function removeAuthCookie(): Promise<void> {
 }
 
 /**
- * Get current authenticated user from cookie
+ * Get current authenticated user from cookie (server-side only)
  */
 export async function getCurrentUser(): Promise<JWTPayload | null> {
-  console.log("👤 getCurrentUser - Starting...");
   const token = await getAuthToken();
   if (!token) {
-    console.log("👤 getCurrentUser - No token found");
     return null;
   }
 
-  console.log("👤 getCurrentUser - Token found, verifying...");
   const user = verifyToken(token);
-  console.log("👤 getCurrentUser - Verification result:", user ? `User: ${user.email}` : "Invalid token");
   return user;
 }
 
 /**
- * Check if user is authenticated
+ * Check if user is authenticated (server-side only)
  */
 export async function isAuthenticated(): Promise<boolean> {
   const user = await getCurrentUser();
@@ -113,7 +112,7 @@ export async function isAuthenticated(): Promise<boolean> {
 }
 
 /**
- * Check if user is super admin
+ * Check if user is super admin (server-side only)
  */
 export async function isSuperAdmin(): Promise<boolean> {
   const user = await getCurrentUser();
@@ -121,7 +120,7 @@ export async function isSuperAdmin(): Promise<boolean> {
 }
 
 /**
- * Check if user has client admin role
+ * Check if user has client admin role (server-side only)
  */
 export async function isClientAdmin(): Promise<boolean> {
   const user = await getCurrentUser();
@@ -167,24 +166,6 @@ export async function requireTenantAccess(tenantId: number): Promise<JWTPayload>
   }
 
   return user;
-}
-
-/**
- * Hash password (simple implementation - replace with bcrypt in production if needed)
- * Note: As per requirements, we're storing raw passwords
- */
-export function hashPassword(password: string): string {
-  // For now, returning raw password as per requirements
-  // In production, you might want to add basic encoding
-  return password;
-}
-
-/**
- * Verify password
- */
-export function verifyPassword(password: string, hashedPassword: string): boolean {
-  // Simple comparison for raw password storage
-  return password === hashedPassword;
 }
 
 /**

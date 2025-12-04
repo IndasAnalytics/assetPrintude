@@ -22,6 +22,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { authFetch } from "@/lib/auth-client";
 
 interface Repair {
   id: number;
@@ -54,7 +55,7 @@ export default function RepairsPage() {
         url += `?status=${statusFilter}`;
       }
 
-      const response = await fetch(url);
+      const response = await authFetch(url);
       const data = await response.json();
 
       if (data.success) {

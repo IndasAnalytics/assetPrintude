@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { authFetch } from "@/lib/auth-client";
 
 interface Repair {
   id: number;
@@ -56,7 +57,7 @@ export default function RepairDetailPage() {
   const fetchRepair = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/repairs/${params.id}`);
+      const response = await authFetch(`/api/repairs/${params.id}`);
       const data = await response.json();
 
       if (data.success) {
@@ -74,7 +75,7 @@ export default function RepairDetailPage() {
 
   const handleDelete = async () => {
     try {
-      const response = await fetch(`/api/repairs/${params.id}`, {
+      const response = await authFetch(`/api/repairs/${params.id}`, {
         method: "DELETE",
       });
 

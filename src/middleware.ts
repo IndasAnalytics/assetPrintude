@@ -29,13 +29,12 @@ async function verifyTokenEdge(token: string): Promise<CustomJWTPayload | null> 
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const token = request.cookies.get("auth-token")?.value;
 
-  // Debug logging for production troubleshooting
-  if (process.env.NODE_ENV === "production" && !token) {
-    console.log("🔒 Middleware - No token found for path:", pathname);
-    console.log("🍪 Middleware - All cookies:", request.cookies.getAll().map(c => c.name).join(", ") || "none");
-  }
+  // Read token from Authorization header (Bearer token)
+  const authHeader = request.headers.get("authorization");
+  const token = authHeader?.startsWith("Bearer ")
+    ? authHeader.substring(7)
+    : null;
 
   // Allow public routes and auth API routes
   if (publicRoutes.includes(pathname) || authRoutes.includes(pathname) || authApiRoutes.includes(pathname)) {
@@ -52,58 +51,26 @@ export async function middleware(request: NextRequest) {
 
   // Check for authentication token
   if (!token) {
-    // For API routes, return 401 instead of redirecting
+    // For API routes, require Authorization header
     if (pathname.startsWith("/api")) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
     }
-    // Redirect to appropriate login page
-    if (pathname.startsWith("/admin")) {
-      return NextResponse.redirect(new URL("/auth/admin/login", request.url));
-    }
-    return NextResponse.redirect(new URL("/auth/client/login", request.url));
+
+    // For page routes, allow through and handle auth client-side
+    // (Browser navigation doesn't send Authorization header, token is in localStorage)
+    return NextResponse.next();
   }
 
-  // Verify token
+  // Verify token (only for API routes at this point)
   const user = await verifyTokenEdge(token);
 
-  // Debug logging for production
-  if (process.env.NODE_ENV === "production") {
-    if (user) {
-      console.log("✅ Middleware - Token verified for user:", user.email, "Path:", pathname);
-    } else {
-      console.log("❌ Middleware - Token verification failed for path:", pathname);
-    }
-  }
-
   if (!user) {
-    // For API routes, return 401 instead of redirecting
+    // Invalid token for API routes
     if (pathname.startsWith("/api")) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
     }
-    // Invalid token, redirect to login
-    if (pathname.startsWith("/admin")) {
-      const response = NextResponse.redirect(new URL("/auth/admin/login", request.url));
-      response.cookies.delete("auth-token");
-      return response;
-    }
-    const response = NextResponse.redirect(new URL("/auth/client/login", request.url));
-    response.cookies.delete("auth-token");
-    return response;
-  }
-
-  // Role-based access control
-  if (pathname.startsWith("/admin")) {
-    // Only super admins can access admin routes
-    if (user.role !== "SUPER_ADMIN") {
-      return NextResponse.redirect(new URL("/app/dashboard", request.url));
-    }
-  }
-
-  if (pathname.startsWith("/app")) {
-    // Super admins cannot access client workspace (they have their own admin portal)
-    if (user.role === "SUPER_ADMIN") {
-      return NextResponse.redirect(new URL("/admin/dashboard", request.url));
-    }
+    // For page routes, allow through (auth handled client-side)
+    return NextResponse.next();
   }
 
   // Add user info to headers for API routes

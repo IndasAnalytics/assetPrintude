@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { authFetch } from "@/lib/auth-client";
 
 interface Asset {
   id: number;
@@ -49,7 +50,7 @@ export default function NewRepairPage() {
 
   const fetchAssets = async () => {
     try {
-      const response = await fetch("/api/assets");
+      const response = await authFetch("/api/assets");
       const data = await response.json();
       if (data.success) {
         setAssets(data.data);
@@ -61,7 +62,7 @@ export default function NewRepairPage() {
 
   const fetchVendors = async () => {
     try {
-      const response = await fetch("/api/masters/vendors");
+      const response = await authFetch("/api/masters/vendors");
       const data = await response.json();
       if (data.success) {
         setVendors(data.data);
@@ -82,7 +83,7 @@ export default function NewRepairPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/repairs", {
+      const response = await authFetch("/api/repairs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

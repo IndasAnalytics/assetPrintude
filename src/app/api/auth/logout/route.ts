@@ -1,19 +1,15 @@
 import { NextResponse } from "next/server";
-import { removeAuthCookie } from "@/lib/auth";
 
+/**
+ * Logout endpoint for Bearer token authentication
+ * Since tokens are stateless and stored client-side,
+ * this endpoint just confirms the logout action
+ */
 export async function POST() {
-  try {
-    await removeAuthCookie();
-
-    return NextResponse.json({
-      success: true,
-      message: "Logged out successfully",
-    });
-  } catch (error) {
-    console.error("Logout error:", error);
-    return NextResponse.json(
-      { success: false, message: "An error occurred during logout" },
-      { status: 500 }
-    );
-  }
+  // With Bearer tokens, logout is handled client-side by removing the token
+  // This endpoint is kept for compatibility and can be used for logging/analytics
+  return NextResponse.json({
+    success: true,
+    message: "Logged out successfully",
+  });
 }

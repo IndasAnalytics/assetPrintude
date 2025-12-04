@@ -24,6 +24,7 @@ import { ReturnAssetDialog } from "@/components/ReturnAssetDialog";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import QRCode from "qrcode";
+import { authFetch } from "@/lib/auth-client";
 
 interface Asset {
   id: number;
@@ -79,7 +80,7 @@ export default function AssetDetailPage() {
   const fetchAsset = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/assets/${params.id}`);
+      const response = await authFetch(`/api/assets/${params.id}`);
       const data = await response.json();
 
       if (data.success) {
@@ -100,7 +101,7 @@ export default function AssetDetailPage() {
 
   const fetchHistory = async () => {
     try {
-      const response = await fetch(`/api/assets/${params.id}/history`);
+      const response = await authFetch(`/api/assets/${params.id}/history`);
       const data = await response.json();
 
       if (data.success) {
@@ -118,7 +119,7 @@ export default function AssetDetailPage() {
 
   const handleDelete = async () => {
     try {
-      const response = await fetch(`/api/assets/${params.id}`, {
+      const response = await authFetch(`/api/assets/${params.id}`, {
         method: "DELETE",
       });
 

@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { authFetch } from "@/lib/auth-client";
 
 interface ReturnAssetDialogProps {
   assetId: number;
@@ -41,7 +42,7 @@ export function ReturnAssetDialog({
     setIsLoading(true);
 
     try {
-      const response = await fetch(`/api/assets/${assetId}/return`, {
+      const response = await authFetch(`/api/assets/${assetId}/return`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ notes }),

@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { authFetch } from "@/lib/auth-client";
 
 interface DashboardStats {
   totalTenants: number;
@@ -49,7 +50,7 @@ export default function AdminDashboardPage() {
   const fetchDashboardData = async () => {
     try {
       // Fetch stats
-      const statsResponse = await fetch("/api/admin/dashboard/stats");
+      const statsResponse = await authFetch("/api/admin/dashboard/stats");
       const statsResult = await statsResponse.json();
 
       if (statsResult.success) {
@@ -59,7 +60,7 @@ export default function AdminDashboardPage() {
       }
 
       // Fetch recent tenants
-      const tenantsResponse = await fetch("/api/admin/tenants?limit=5");
+      const tenantsResponse = await authFetch("/api/admin/tenants?limit=5");
       const tenantsResult = await tenantsResponse.json();
 
       if (tenantsResult.success) {

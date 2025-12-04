@@ -52,6 +52,7 @@ import { Badge } from "@/components/ui/badge";
 import { MapPin, Plus, Pencil, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import type { Location } from "@/types/asset";
+import { authFetch } from "@/lib/auth-client";
 
 export default function LocationsPage() {
   const [locations, setLocations] = useState<Location[]>([]);
@@ -78,7 +79,7 @@ export default function LocationsPage() {
   const fetchLocations = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("/api/masters/locations");
+      const response = await authFetch("/api/masters/locations");
       const result = await response.json();
 
       if (result.success) {
@@ -127,7 +128,7 @@ export default function LocationsPage() {
         : "/api/masters/locations";
       const method = editingLocation ? "PUT" : "POST";
 
-      const response = await fetch(url, {
+      const response = await authFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -163,7 +164,7 @@ export default function LocationsPage() {
     if (!deletingLocation) return;
 
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `/api/masters/locations/${deletingLocation.id}`,
         {
           method: "DELETE",

@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { QrCode, Package, MapPin, User, ArrowRight, Camera, X } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { authFetch } from "@/lib/auth-client";
 
 interface AssetData {
   id: number;
@@ -64,7 +65,7 @@ export default function ScanQRPage() {
 
     // Resolve QR code
     try {
-      const response = await fetch(`/api/qr/resolve?hash=${encodeURIComponent(decodedText)}`);
+      const response = await authFetch(`/api/qr/resolve?hash=${encodeURIComponent(decodedText)}`);
       const result = await response.json();
 
       if (result.success) {

@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DollarSign, TrendingUp, Users, CreditCard } from "lucide-react";
 import { toast } from "sonner";
+import { authFetch } from "@/lib/auth-client";
 
 interface RevenueAnalytics {
   month: string;
@@ -40,7 +41,7 @@ export default function RevenueAnalyticsPage() {
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/admin/analytics/revenue?months=${months}`);
+      const response = await authFetch(`/api/admin/analytics/revenue?months=${months}`);
       const result = await response.json();
 
       if (result.success) {

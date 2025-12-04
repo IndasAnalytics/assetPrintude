@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
       INNER JOIN Categories c ON a.categoryId = c.id
       INNER JOIN Locations l ON a.locationId = l.id
       LEFT JOIN Employees e ON a.assignedToEmployeeId = e.id
-      WHERE a.qrHash = @qrHash AND a.isActive = 1`,
+      WHERE a.qrHash = @qrHash`,
       { qrHash }
     );
 

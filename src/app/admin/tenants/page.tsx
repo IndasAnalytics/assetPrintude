@@ -15,6 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { authFetch } from "@/lib/auth-client";
 
 interface Tenant {
   id: number;
@@ -38,7 +39,7 @@ export default function TenantsPage() {
   const fetchTenants = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("/api/admin/tenants");
+      const response = await authFetch("/api/admin/tenants");
       const data = await response.json();
 
       if (data.success) {

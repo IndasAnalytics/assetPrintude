@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { authFetch } from "@/lib/auth-client";
 
 interface Bin {
   id: number;
@@ -35,7 +36,7 @@ export default function BinsPage() {
   const fetchBins = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("/api/bins");
+      const response = await authFetch("/api/bins");
       const data = await response.json();
 
       if (data.success) {

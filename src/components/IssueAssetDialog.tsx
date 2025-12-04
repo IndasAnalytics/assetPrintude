@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { authFetch } from "@/lib/auth-client";
 
 interface Employee {
   id: number;
@@ -57,7 +58,7 @@ export function IssueAssetDialog({
 
   const fetchEmployees = async () => {
     try {
-      const response = await fetch("/api/masters/employees");
+      const response = await authFetch("/api/masters/employees");
       const data = await response.json();
       if (data.success) {
         setEmployees(data.data);
@@ -79,7 +80,7 @@ export function IssueAssetDialog({
     setIsLoading(true);
 
     try {
-      const response = await fetch(`/api/assets/${assetId}/issue`, {
+      const response = await authFetch(`/api/assets/${assetId}/issue`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

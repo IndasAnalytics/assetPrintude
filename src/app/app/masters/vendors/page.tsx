@@ -44,6 +44,7 @@ import {
 import { Building2, Plus, Pencil, Trash2, Loader2, Mail, Phone } from "lucide-react";
 import { toast } from "sonner";
 import type { Vendor } from "@/types/asset";
+import { authFetch } from "@/lib/auth-client";
 
 export default function VendorsPage() {
   const [vendors, setVendors] = useState<Vendor[]>([]);
@@ -72,7 +73,7 @@ export default function VendorsPage() {
   const fetchVendors = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("/api/masters/vendors");
+      const response = await authFetch("/api/masters/vendors");
       const result = await response.json();
 
       if (result.success) {
@@ -125,7 +126,7 @@ export default function VendorsPage() {
         : "/api/masters/vendors";
       const method = editingVendor ? "PUT" : "POST";
 
-      const response = await fetch(url, {
+      const response = await authFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -161,7 +162,7 @@ export default function VendorsPage() {
     if (!deletingVendor) return;
 
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `/api/masters/vendors/${deletingVendor.id}`,
         {
           method: "DELETE",

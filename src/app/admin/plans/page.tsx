@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { authFetch } from "@/lib/auth-client";
 
 interface Plan {
   id: number;
@@ -30,7 +31,7 @@ export default function PlansPage() {
   const fetchPlans = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("/api/admin/plans");
+      const response = await authFetch("/api/admin/plans");
       const data = await response.json();
 
       if (data.success) {
@@ -49,8 +50,15 @@ export default function PlansPage() {
   const parseFeatures = (features: string | null): string[] => {
     if (!features) return [];
     try {
-      return JSON.parse(features);
-    } catch {
+      const parsed = JSON.parse(features);
+      // Ensure the parsed result is actually an array
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+      console.warn("Features is not an array:", parsed);
+      return [];
+    } catch (error) {
+      console.warn("Failed to parse features:", error);
       return [];
     }
   };

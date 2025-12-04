@@ -54,10 +54,11 @@ export async function POST(request: NextRequest) {
       tenantId: null,
     });
 
-    // Create response
-    const response = NextResponse.json({
+    // Return token in response body for Bearer authentication
+    return NextResponse.json({
       success: true,
       message: "Admin login successful",
+      token, // Return token for client to store
       user: {
         id: user.id,
         email: user.email,
@@ -66,17 +67,6 @@ export async function POST(request: NextRequest) {
         tenantId: null,
       },
     });
-
-    // Set cookie on response
-    response.cookies.set("auth-token", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: "/",
-    });
-
-    return response;
   } catch (error) {
     console.error("Admin login error:", error);
     return NextResponse.json(

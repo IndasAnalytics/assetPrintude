@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginFormData } from "@/lib/validations";
+import { login } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,20 +27,14 @@ export default function ClientLoginPage() {
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/auth/client/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      const result = await login(data.email, data.password, false);
 
-      const result = await response.json();
-
-      if (!response.ok) {
+      if (!result.success) {
         throw new Error(result.message || "Login failed");
       }
 
       toast.success("Login successful!");
-      // Use window.location for hard redirect to ensure cookie is properly set
+      // Redirect to dashboard
       window.location.href = "/app/dashboard";
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Login failed. Please try again.");

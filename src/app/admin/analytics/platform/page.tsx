@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Building2, Package, Wrench, Users, TrendingUp, TrendingDown } from "lucide-react";
 import { toast } from "sonner";
+import { authFetch } from "@/lib/auth-client";
 
 interface PlatformAnalytics {
   date: string;
@@ -28,7 +29,7 @@ export default function PlatformAnalyticsPage() {
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/admin/analytics/platform?days=${days}`);
+      const response = await authFetch(`/api/admin/analytics/platform?days=${days}`);
       const result = await response.json();
 
       if (result.success) {

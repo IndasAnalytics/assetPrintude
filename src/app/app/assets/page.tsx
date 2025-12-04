@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { authFetch } from "@/lib/auth-client";
 
 interface Asset {
   id: number;
@@ -63,7 +64,7 @@ export default function AssetsPage() {
         url += `?${params.toString()}`;
       }
 
-      const response = await fetch(url);
+      const response = await authFetch(url);
       const data = await response.json();
 
       if (data.success) {

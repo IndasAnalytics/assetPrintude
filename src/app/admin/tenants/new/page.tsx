@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { authFetch } from "@/lib/auth-client";
 
 interface Plan {
   id: number;
@@ -48,7 +49,7 @@ export default function NewTenantPage() {
 
   const fetchPlans = async () => {
     try {
-      const response = await fetch("/api/admin/plans");
+      const response = await authFetch("/api/admin/plans");
       const data = await response.json();
       if (data.success) {
         setPlans(data.data);
@@ -69,7 +70,7 @@ export default function NewTenantPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/admin/tenants", {
+      const response = await authFetch("/api/admin/tenants", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

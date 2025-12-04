@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { authFetch } from "@/lib/auth-client";
 
 interface Category {
   id: number;
@@ -99,7 +100,7 @@ export default function EditAssetPage() {
   const fetchAsset = async () => {
     try {
       setIsFetching(true);
-      const response = await fetch(`/api/assets/${params.id}`);
+      const response = await authFetch(`/api/assets/${params.id}`);
       const data = await response.json();
 
       if (data.success) {
@@ -136,9 +137,9 @@ export default function EditAssetPage() {
   const fetchMasterData = async () => {
     try {
       const [categoriesRes, locationsRes, vendorsRes] = await Promise.all([
-        fetch("/api/masters/categories"),
-        fetch("/api/masters/locations"),
-        fetch("/api/masters/vendors"),
+        authFetch("/api/masters/categories"),
+        authFetch("/api/masters/locations"),
+        authFetch("/api/masters/vendors"),
       ]);
 
       const [categoriesData, locationsData, vendorsData] = await Promise.all([
@@ -158,7 +159,7 @@ export default function EditAssetPage() {
 
   const fetchBins = async (locationId: string) => {
     try {
-      const response = await fetch(`/api/bins?locationId=${locationId}`);
+      const response = await authFetch(`/api/bins?locationId=${locationId}`);
       const data = await response.json();
       if (data.success) {
         setBins(data.data);
@@ -179,7 +180,7 @@ export default function EditAssetPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`/api/assets/${params.id}`, {
+      const response = await authFetch(`/api/assets/${params.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

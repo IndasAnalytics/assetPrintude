@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import crypto from "crypto";
+import { authFetch } from "@/lib/auth-client";
 
 interface Category {
   id: number;
@@ -77,9 +78,9 @@ export default function NewAssetPage() {
   const fetchMasterData = async () => {
     try {
       const [categoriesRes, locationsRes, vendorsRes] = await Promise.all([
-        fetch("/api/masters/categories"),
-        fetch("/api/masters/locations"),
-        fetch("/api/masters/vendors"),
+        authFetch("/api/masters/categories"),
+        authFetch("/api/masters/locations"),
+        authFetch("/api/masters/vendors"),
       ]);
 
       const [categoriesData, locationsData, vendorsData] = await Promise.all([
@@ -99,7 +100,7 @@ export default function NewAssetPage() {
 
   const fetchBins = async (locationId: string) => {
     try {
-      const response = await fetch(`/api/bins?locationId=${locationId}`);
+      const response = await authFetch(`/api/bins?locationId=${locationId}`);
       const data = await response.json();
       if (data.success) {
         setBins(data.data);
@@ -123,7 +124,7 @@ export default function NewAssetPage() {
       // Generate QR hash
       const qrHash = crypto.randomBytes(16).toString("hex");
 
-      const response = await fetch("/api/assets", {
+      const response = await authFetch("/api/assets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

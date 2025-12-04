@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { authFetch } from "@/lib/auth-client";
 
 interface Asset {
   id: number;
@@ -38,7 +39,7 @@ export default function QRAssetPage() {
   const fetchAssetByQR = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/assets/qr/${params.hash}`);
+      const response = await authFetch(`/api/assets/qr/${params.hash}`);
       const data = await response.json();
 
       if (data.success) {
