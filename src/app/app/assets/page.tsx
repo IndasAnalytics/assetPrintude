@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Package, Plus, Search, Filter, QrCode } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Package, Plus, Search, Filter, QrCode, MoreVertical, Eye, LogOut, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -20,6 +21,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { authFetch } from "@/lib/auth-client";
@@ -41,6 +50,7 @@ export default function AssetsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const router = useRouter();
 
   useEffect(() => {
     fetchAssets();
@@ -98,6 +108,14 @@ export default function AssetsPage() {
         {status.replace("_", " ")}
       </Badge>
     );
+  };
+
+  const handleIssueAsset = (asset: Asset) => {
+    router.push(`/app/assets/${asset.id}?action=issue`);
+  };
+
+  const handleReturnAsset = (asset: Asset) => {
+    router.push(`/app/assets/${asset.id}?action=return`);
   };
 
   return (
@@ -166,18 +184,19 @@ export default function AssetsPage() {
               <TableHead>Assigned To</TableHead>
               <TableHead className="text-right">Purchase Cost</TableHead>
               <TableHead className="text-right">Current Value</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8">
+                <TableCell colSpan={9} className="text-center py-8">
                   Loading assets...
                 </TableCell>
               </TableRow>
             ) : assets.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8">
+                <TableCell colSpan={9} className="text-center py-8">
                   <div className="flex flex-col items-center gap-2">
                     <Package className="h-12 w-12 text-muted-foreground" />
                     <p className="text-muted-foreground">No assets found</p>
@@ -212,6 +231,37 @@ export default function AssetsPage() {
                     {asset.currentValue
                       ? `₹${asset.currentValue.toFixed(2)}`
                       : "-"}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuItem asChild>
+                          <Link href={`/app/assets/${asset.id}`}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            View Details
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        {asset.status === "IN_STOCK" && (
+                          <DropdownMenuItem onClick={() => handleIssueAsset(asset)}>
+                            <LogOut className="mr-2 h-4 w-4" />
+                            Issue Asset
+                          </DropdownMenuItem>
+                        )}
+                        {asset.status === "ASSIGNED" && (
+                          <DropdownMenuItem onClick={() => handleReturnAsset(asset)}>
+                            <LogIn className="mr-2 h-4 w-4" />
+                            Return Asset
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               ))

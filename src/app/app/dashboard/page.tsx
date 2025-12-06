@@ -115,7 +115,7 @@ export default function ClientDashboardPage() {
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground">Overview of your asset management</p>
         </div>
-        <Link href="/app/assets/add">
+        <Link href="/app/assets/new">
           <Button className="gap-2">
             <PackagePlus className="h-4 w-4" />
             Add New Asset
